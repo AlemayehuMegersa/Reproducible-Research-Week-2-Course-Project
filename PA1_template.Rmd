@@ -1,0 +1,112 @@
+---
+title: "Regression Models Course Project"
+author: "Sam"
+date: "4/26/2022"
+output: html_document
+---
+
+## Regression Models Course Project
+
+## Reading the dataset and processing the data
+
+```{r}
+activity <- read.csv("activity.csv")
+str(activity)
+activity$date <- as.Date(activity$date)
+head(activity)
+```
+
+## Dropping NA rows 
+
+```{r}
+library(tidyverse)
+activity <- drop_na(activity, steps)
+sum(is.na(activity$steps))
+```
+
+## Histogram of the total number of steps taken each day
+
+```{r}
+step_total <- aggregate(steps~date,activity,sum)
+head(step_total)
+dim(step_total)
+
+hist(step_total$steps)
+```
+
+## Mean and median number of steps taken each day
+
+```{r}
+mean_steps <- aggregate(steps~date,activity,mean)
+mean_steps
+
+median_steps <- aggregate(steps~date,activity,median)
+median_steps
+```
+
+## Time series plot of the average number of steps taken based on 5-minute interval
+
+```{r}
+library(ggplot2)
+tsdata <- aggregate(steps~interval,activity,mean)
+head(tsdata)
+dim(tsdata)
+ggplot(data = tsdata, aes(x = interval, y = steps)) + geom_line()
+```
+
+**The time interval between 750 - 1000 had the most number of steps.**
+
+## Code to describe and show a strategy for imputing missing data
+
+```{r}
+imputed_activity <- activity
+```
+
+## Replacing all the NA values with the mean of steps w.r.t their corresponding intervals
+
+```{r}
+imputed_activity[which(is.na(imputed_activity$steps))] <- tsdata$steps[imputed_activity$interval == tsdata$interval]
+
+sum(is.na(imputed_activity))
+
+head(imputed_activity)
+dim(imputed_activity)
+
+imputed_activity$steps <- ifelse(is.na(imputed_activity$steps), tsdata$steps, imputed_activity$steps)
+sum(is.na(imputed_activity$steps))
+```
+
+## Histogram of the total number of steps taken each day after missing values are imputed
+
+```{r}
+hist(imputed_activity$steps)
+```
+
+## Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+
+```{r}
+library(lubridate)
+imputed_activity$day <- weekdays(activity$date)
+```
+
+## Creating dataframes grouped by weekends and weekdays to create a panel plot
+
+```{r}
+weekend_data <- subset(imputed_activity, day == c("Saturday", "Sunday"), select = c(steps, date, interval, day))
+head(weekend_data)
+unique(weekend_data$day)
+```
+
+```{r}
+weekday_data <- subset(imputed_activity, day == c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"), select = c(steps, date, interval, day))
+head(weekday_data)
+unique(weekday_data$day)
+```
+
+## Panel plot
+
+```{r}
+par(mfrow=c(2,1))
+plot(y = weekend_data$steps, x = weekend_data$interval, type = "l")
+plot(y = weekday_data$steps, x = weekday_data$interval, type = "l")
+```
