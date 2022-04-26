@@ -2,10 +2,12 @@
 title: "Regression Models Course Project"
 author: "Sam"
 date: "4/26/2022"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
-## Regression Models Course Project
+## Reproducible Research Course Project
 
 ## Reading the dataset and processing the data
 
